@@ -66,7 +66,8 @@ async def lyrics(ctx, *, song):
         await ctx.reply("Give me some words to search for you dickhead!!")
     else:
         ly = lyric(song)
-        await ctx.reply(ly)
+        embed=discord.Embed(title=f"{ly.title} - {ly.artist}", description=f"{ly.song_lyrics}")
+        await ctx.send(embed=embed)
 
 
 # updates homie counter vc by calculating day difference of today and busita date
