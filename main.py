@@ -62,8 +62,11 @@ async def resources(ctx):
 
 @bot.command()
 async def lyrics(ctx, *, song):
-    ly = lyric(song)
-    await ctx.reply(ly)
+    if song is None:
+        await ctx.reply("Give me some words to search for you dickhead!!")
+    else:
+        ly = lyric(song)
+        await ctx.reply(ly)
 
 
 # updates homie counter vc by calculating day difference of today and busita date
