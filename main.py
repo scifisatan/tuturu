@@ -1,355 +1,339 @@
-#Importing required libraries
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import os
-from mohp import stats, number
-from glyrics import lyric, search
 from random import randint
-from Notes import Notes
-from helpers import getPath
-from Assign import Assign
-from helping import getPat
+from keep_alive import keep_alive
+from useless import Date, getDifference
+import datetime
+from bs4 import BeautifulSoup
+import requests
+from hentai import Hentai
+import time
+from discord.ui import button, View, Button
+from discord.interactions import Interaction
+from glyrics import lyric
 
-#Assigning Command Prefix
-bot = commands.Bot(command_prefix=["oi ","Oi ", "oi", "Oi"])
+bot = commands.Bot(
+    command_prefix=["oi ", "Oi ", "oi", "Oi", "OI ", "OI", "oI", "oI "])
+buSitaDate = Date(24, 4, 2021)
+weekday = {"sun": "0", "mon": "1", "tue": "2",
+           "wed": "3", "thu": "4", "fri": "5", "sat": "6"}
 
-#On Ready Function
+
 @bot.event
 async def on_ready():
     print(f"Connected as {bot.user}!")
+    homieCounter.start()
 
-#Checks every message
-@bot.event
-async def on_message(message):
-    msg = message.content.lower()
-    content = Assign(getPat(message)).get(msg) 
-    if content: #Checks if the message is one of valid commands
-        same = content
-        await message.channel.send({same})
+
+@bot.command()
+async def clear(ctx, amount=5):
+    await ctx.channel.purge(limit=amount+1)
+
+
+@bot.command()
+async def qnbank(ctx):
+    Mathematics = Button(
+        label="Mathematics", url="https://aakritsubedi9.com.np/uploads/que-bank/Engineering-Mathematics-II.pdf")
+    Chemistry = Button(
+        label="Chemistry", url="https://aakritsubedi9.com.np/uploads/que-bank/Engineering-Chemistry.pdf")
+    Drawing = Button(
+        label="Drawing", url="https://aakritsubedi9.com.np/uploads/que-bank/Engineering-Drawing-II.pdf")
+    Electronics = Button(
+        label="Electronics", url="https://aakritsubedi9.com.np/uploads/que-bank/Basic-Electronics-Engineering.pdf")
+    Thermodynamics = Button(
+        label="Thermodynamics", url="https://aakritsubedi9.com.np/uploads/que-bank/Thermodynamics.pdf")
+    view = View()
+    view.add_item(Mathematics)
+    view.add_item(Chemistry)
+    view.add_item(Drawing)
+    view.add_item(Electronics)
+    view.add_item(Thermodynamics)
+    await ctx.reply("**Old Questions**\nPro tip: Once you click __trust this domain__, the button will directly open the url without the confirmation box", view=view)
+
+
+@bot.command()
+async def resources(ctx):
+    MathSolution = Button(
+        label="Math Solution", url="https://aakritsubedi9.com.np/uploads/2/SH451_2020-12-07T02:52:49.778Z_Maths%20Solution%20II%20Sem.pdf")
+    view = View()
+    view.add_item(MathSolution)
+    await ctx.reply("**OK NERD!!**", view=view)
+
+@bot.command()
+async def lyrics(ctx, *, song):
+    ly = lyric(song)
+    await ctx.reply(ly)
+
+
+# updates homie counter vc by calculating day difference of today and busita date
+
+@tasks.loop(seconds=600)
+async def homieCounter():
+    today = datetime.date.today()
+    d = int(today.strftime("%d"))
+    m = int(today.strftime("%m"))
+    y = int(today.strftime("%Y"))
+    todayDate = Date(d, m, y)
+    s = f"Homies: {getDifference(buSitaDate, todayDate)} days"
+    await bot.get_channel(856965820788637706).edit(name=s)
+
+
+# send random advice
+@bot.command()
+async def advice(ctx):
+    url = "https://api.adviceslip.com/advice"
+    response = requests.get(url)
+    advice = response.json()["slip"]["advice"]
+    embed = discord.Embed(
+        description=advice,
+        color=discord.Color.green())
+    await ctx.send(embed=embed)
+
+# send random joke
+
+
+@bot.command()
+async def joke(ctx):
+    url = "https://icanhazdadjoke.com/"
+    response = requests.get(url, headers={"Accept": "application/json"})
+    url = response.json()["joke"]
+    embed = discord.Embed(
+        description=url,
+        color=discord.Color.green())
+    await ctx.send(embed=embed)
+
+# sends random waifu pics
+
+
+@bot.command()
+async def waifu(ctx):
+    url = "https://api.waifu.pics/sfw/waifu"
+    response = requests.get(url)
+    imageUrl = response.json()["url"]
+    e = discord.Embed(title="Waifu", url=imageUrl, color=0xff66d6)
+    e.set_image(url=url)
+    await ctx.reply(embed=e)
+
+# sends random catgirl pics
+
+
+@bot.command()
+async def catgirl(ctx):
+    url = "https://api.waifu.pics/sfw/neko"
+    response = requests.get(url)
+    url = response.json()["url"]
+    e = discord.Embed(title="Catgirl", url=url, color=0xff66d6)
+    e.set_image(url=url)
+    await ctx.reply(embed=e)
+
+
+@bot.command()
+async def ping(ctx):
+    embed = discord.Embed(title=f'{round(bot.latency * 1000)}ms',
+                          color=discord.Color.red())
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def routine(ctx):
+    view = View()
+    Sunday = Button(label="Sunday", style=discord.ButtonStyle.green)
+
+    async def Sunday_callback(interaction):
+        embed = discord.Embed(title="   ", color=0xe100ff)
+        embed.set_author(name="-SUNDAY-")
+        embed.add_field(name="**Test**", value="11:00 - 11:45", inline=False)
+        embed.add_field(name="**Maths - ChD**",
+                        value="11:45 - 1:15", inline=False)
+        embed.add_field(name="**Drawing**", value="2:00 - 5:00", inline=False)
+        embed.set_footer(text="Hope you fail!")
+        await interaction.response.send_message(embed=embed)
+    Sunday.callback = Sunday_callback
+    view.add_item(Sunday)
+
+    Monday = Button(label="Monday", style=discord.ButtonStyle.green)
+
+    async def Monday_callback(interaction):
+        embed = discord.Embed(title="   ", color=0xe100ff)
+        embed.set_author(name="-MONDAY-")
+        embed.add_field(name="**Thermodynamics**",
+                        value="11:00 - 12:30", inline=False)
+        embed.add_field(name="**Electronics - BRM**",
+                        value="12:30 - 1:15", inline=False)
+        embed.add_field(name="**Drawing**", value="2:00 - 5:00", inline=False)
+        embed.set_footer(text="Hope you fail!")
+        await interaction.response.send_message(embed=embed)
+    Monday.callback = Monday_callback
+    view.add_item(Monday)
+
+    Tuesday = Button(label="Tuesday", style=discord.ButtonStyle.green)
+
+    async def Tuesday_callback(interaction):
+        embed = discord.Embed(title="   ", color=0xe100ff)
+        embed.set_author(name="-TUESDAY-")
+        embed.add_field(name="**Math - BK**",
+                        value="11:00 - 12:30", inline=False)
+        embed.add_field(name="**Electronics - DG**",
+                        value="12:30 - 2:00", inline=False)
+        embed.add_field(name="**Math - ChD**",
+                        value="2:45 - 3:30", inline=False)
+        embed.add_field(name="**Chemistry - RPD**",
+                        value="3:30 - 5:00", inline=False)
+        await interaction.response.send_message(embed=embed)
+    Tuesday.callback = Tuesday_callback
+    view.add_item(Tuesday)
+
+    Wednesday = Button(label="Wednesday", style=discord.ButtonStyle.green)
+
+    async def Wednesday_callback(interaction):
+        embed = discord.Embed(title="   ", color=0xe100ff)
+        embed.set_author(name="-WEDNESDAY-")
+        embed.add_field(name="**Thermodynamics/Elctronics Lab**",
+                        value="11:00 - 1:45", inline=False)
+        embed.add_field(name="**Chemistry - RPD**",
+                        value="11:45 - 1:15", inline=False)
+        embed.add_field(name="**Thermodynamics -MLP**",
+                        value="2:00 - 5:00", inline=False)
+        embed.set_footer(text="Hope you fail!")
+        await interaction.response.send_message(embed=embed)
+    Wednesday.callback = Wednesday_callback
+    view.add_item(Wednesday)
+
+    Thurdsday = Button(label="Thurdsday", style=discord.ButtonStyle.green)
+
+    async def Thurdsday_callback(interaction):
+        embed = discord.Embed(title="   ", color=0xe100ff)
+        embed.set_author(name="-THURSDAY-")
+        embed.add_field(name="**Thermodynamics**",
+                        value="11:00 - 12:30", inline=False)
+        embed.add_field(name="**Electronics - BRM**",
+                        value="12:30 - 1:15", inline=False)
+        embed.add_field(name="**Chemistry**",
+                        value="2:00 - 2:45", inline=False)
+        embed.add_field(name="**Tutorial - BK**",
+                        value="2:45 - 3:30", inline=False)
+        embed.add_field(name="**Tutorial - MLP**",
+                        value="3:30 - 4:15", inline=False)
+        embed.add_field(name="**Tutorial - DG**",
+                        value="4:15 - 5:00", inline=False)
+        embed.set_footer(text="Hope you fail!")
+        await interaction.response.send_message(embed=embed)
+    Thurdsday.callback = Thurdsday_callback
+    view.add_item(Thurdsday)
+
+    Friday = Button(label="Friday", style=discord.ButtonStyle.green)
+
+    async def Friday_callback(interaction):
+        embed = discord.Embed(title="   ", color=0x45a1f7)
+        embed.set_author(name="-FRIDAY-")
+        embed.add_field(name="**Electronics - BRM**",
+                        value="11 - 12:30", inline=False)
+        embed.add_field(name="**Maths - ChD**",
+                        value="12:30 - 1:15", inline=False)
+        embed.add_field(name="**Chemistry - NRB**",
+                        value="2:00 - 2:45", inline=False)
+        embed.add_field(name="**Chemistry Lab**",
+                        value="2:45 - 5:00", inline=False)
+        embed.set_footer(text="Hope you fail!")
+        await interaction.response.send_message(embed=embed)
+    Friday.callback = Friday_callback
+    view.add_item(Friday)
+
+    await ctx.reply("**Routine**", view=view)
+
+
+@bot.command()
+async def nsfw(ctx):
+    if ctx.channel.is_nsfw():
+        url = "https://api.waifu.pics/nsfw/waifu"
+        response = requests.get(url)
+        url = response.json()["url"]
+        e = discord.Embed(title="Waifu", url=url, color=0xff66d6)
+        e.set_image(url=url)
+        await ctx.reply(embed=e)
     else:
+        embed = discord.Embed(
+            title="You cannot use this command in this channel",
+            color=discord.Color.red())
 
-        await bot.process_commands(message) #Sends message to activate commands of it is not one of the assigned Commands
-
-
-bot.remove_command("help")
-@bot.command()
-async def help(ctx):
-    embed=discord.Embed(
-    title="Tuturu Command List",
-        color=discord.Color.blurple())
-  
-    embed.add_field(name="oi help", value="`Shows this message`", inline=True)
-    embed.add_field(name="oi covid", value="`Sends covid updates`", inline=True)
-    embed.add_field(name="oi lyrics <keyword>", value="`Sends lyrics of provided keyword`", inline=True)
-    embed.add_field(name="oi searchly <artist_name> <song_name>", value="`Searches lyrics for a specific song`", inline=True)
-    embed.add_field(name="oi random <digit>", value="`Sends random number of provided digit value`", inline=True)
-    embed.add_field(name="oi aliases",value="`Shows available aliases for the commands`", inline=True)
-    embed.add_field(name="oi note <name>", value="`Sends saved note`", inline=True)
-    embed.add_field(name="oi notes", value="`Sends saved note titles`", inline=True)
-    embed.add_field(name="oi writenote <name> <note>", value="`Creates new note`", inline=True)
-    embed.add_field(name="oi editnote <name> <note>", value="`Edits note if it already exits`", inline=True)
-    embed.add_field(name="oi deletenote <name>", value="`Deletes existing note`", inline=True)
-    embed.add_field(name="oi assign <command> <message>", value="`Assigns custom command to send custom message`", inline=True)
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 @bot.command()
-async def aliases(ctx):
-    embed=discord.Embed(
-        title="Tuturu Command Aliases",
-        description="covid - corona, update\nlyrics - ly,lyric\nrandom - rd\nnotes - dekha, show, all-notes\nnewnote - write, create, new, add\neditnote - edit\ndeletenote - del, remove, delete",
-        color=discord.Color.blurple())
+async def hentai(ctx, n: int):
+    doujin = Hentai(n)
 
-    embed.set_footer(text="Use `oi help` to see available commands")
-    await ctx.send(embed=embed)
+    if ctx.channel.is_nsfw():
+        for link in doujin.image_urls:
+            time.sleep(1)
+            await ctx.send(link)
+        await ctx.reply('Here you go!')
+    else:
+        embed = discord.Embed(
+            title="You cannot use this command in this channel",
+            color=discord.Color.red())
+
+        await ctx.send(embed=embed)
+
+# nsfw
+
 
 @bot.command(name='random', aliases=['rd'])
-async def random(ctx, a:int):
-    range_start = 10**(a-1)
-    range_end = (10**a)-1
-    n = randint(range_start, range_end)
-
+async def random(ctx, a: int):
     if a == 6:
-        embed=discord.Embed(
-            title = n,
-            url=f"https://nhentai.net/g/{n}",
-            color=discord.Color.dark_red())
+        title = "404 – Not Found"
+        while title == "404 – Not Found":
+            range_start = 10**(a - 1)
+            range_end = (10**a) - 1
+            num = randint(range_start, range_end)
+            url = f"https://nhentai.net/g/{num}"
+            r = requests.get(url)
+            soup = BeautifulSoup(r.content, "html.parser")
+            title = soup.select('h1')[0].text.strip()
+            if title != "404 – Not Found":
+                n = num
+
+        embed = discord.Embed(title=n,
+                              url=f"https://nhentai.net/g/{n}",
+                              color=discord.Color.dark_red())
 
         await ctx.send(embed=embed)
     else:
-        embed=discord.Embed(
-            title = n,
-            color=discord.Color.dark_red())
+        range_start = 10**(a - 1)
+        range_end = (10**a) - 1
+        num = randint(range_start, range_end)
+        embed = discord.Embed(title=num, color=discord.Color.dark_red())
 
         await ctx.send(embed=embed)
 
 
 @random.error
 async def random_error(ctx, error):
-    embed=discord.Embed(
-            description=":x: Inavlid Agruement",
-            color=discord.Color.red())
-    
+    embed = discord.Embed(description=":x: Inavlid Agruement",
+                          color=discord.Color.red())
+
     await ctx.send(embed=embed)
 
 
-@bot.command(name='covid', aliases=['corona', 'update'])
-async def covid(ctx):
-    data = stats()
-    embed=discord.Embed(
-    title=f"__**Data of {data[5][0:4]}/{data[5][5:7]}/{data[5][8:10]}**__",
-        color=discord.Color.orange())
-    embed.set_author(name="NepalCovid19Bot",
-    url="https://twitter.com/NepalCovid19Bot",icon_url="https://i.imgur.com/VYrtBfo.jpg")
-
-    embed.add_field(name="\nNew Covid-19 Cases:", value=number(data[7]), inline=False)
-    embed.add_field(name="Deaths:", value=number(data[6]), inline=False)
-    embed.add_field(name="Recovered:", value=number(data[8]), inline=False)
-    embed.add_field(name="Total active cases:", value=number(int(data[2]) - int(data[3]) - int(data[4])), inline=False)
-    embed.add_field(name="PCR Tests taken:", value=number(data[10]), inline=False)
-    embed.add_field(name="RDT Tests taken:", value=number(data[9]), inline=False)
- 
-    embed.set_footer(text="Stay Safe!! I hope you're okay.")
-    await ctx.send(embed=embed)
-
-
-@bot.command(name='lyrics', aliases=['ly', 'lyric'])
-async def lyrics(ctx, *, args):
-    sangeet = lyric(args)
-    for num in range(0,len(sangeet),2000):
-        embed=discord.Embed(
-            description=sangeet[num:num+2000],
-            color=discord.Color.blue())
-        await ctx.send(embed=embed)
-        num = num + 2000
-
-
 @bot.command()
-async def searchly(ctx, artist_name, song_name):
-    try:
-        embed=discord.Embed(
-            description=search(artist_name,song_name),
-            color=discord.Color.blue())
-        
-        await ctx.send(embed=embed)
-    except:
-        embed=discord.Embed(
-            description=":red_circle: Couldn't find either artist or song",
-            color=discord.Color.red())
-    
-        await ctx.send(embed=embed)
+async def tuturu(ctx):
+    await ctx.send("hajur")
 
-
-@bot.command(name='notes', aliases=['dekha', 'show', 'all-notes'])
-async def notes(ctx):
-    # TODO: Make this an embed so commands to read each note can be embedded in
-    #       notes names (not sure that's possible)
-
-    notes = Notes(getPath(ctx)).getAll()
-    if notes:
-        
-        message = ""
-        for name in notes.keys():
-            message += f"* {name}\n"
-
-
-        embed=discord.Embed(
-        title="Here are the notes available to read:",
-        description = message,
-        color=discord.Color.blue())
-
-        embed.set_footer(text="Use oi note <name> to read a note!")
-
-    else:
-        embed=discord.Embed(
-            description="There are no notes! You can add one with oi writenote <name> <content>.",
-            color=discord.Color.blue())
-   
-
-    await ctx.send(embed = embed)
-
-
-@bot.command()
-async def note(ctx, name):
-    name = name.lower().replace(" ", "-")
-    content = Notes(getPath(ctx)).get(name)
-    if content:
-        msg = content
-    else:
-        msg = f"Note “{name}” does not exist.\nUse oi notes to get a list of available notes."
-
-    embed=discord.Embed(
-        description=f"{msg}",
-        color=discord.Color.gold())
-    await ctx.send(embed = embed)
-
-
-@note.error
-async def note_error(ctx, error):
-    msg =" Usage: oi note <name>\nUse `oi notes` to get a list of available notes."
-    embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-    await ctx.send(embed = embed)
-
-
-@bot.command(name='writenote', aliases=['write', 'new', 'create', 'addnote', 'add', 'createnote', 'newnote'])
-async def writenote(ctx, *, args):
-    try:
-        (name, content) = args.split(maxsplit=1)
-    except ValueError:
-        msg = "You must provide a content for the note.\nUsage: `oi writenote <name> <content>`"
-        embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-        await ctx.send(embed = embed)
-        return
-
-    if not name.replace("-", "").replace("_", "").isalpha():
-        msg = "Note name can only contain letters, “-” and “_”."
-        embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-        await ctx.send(embed = embed)
-        return
-
-    name = name.lower().replace(" ", "-")
-    content = content.strip()
-    if len(name) > 30:
-        msg = "Note name cannot exceed 30 characters."
-        embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-        await ctx.send(embed = embed)
-        return
-
-    # Write notes to file
-    notes = Notes(getPath(ctx))
-    notes.write(name, content)
-    print(
-        f"Wrote note “{name}” on server “{ctx.guild.name}” ({ctx.guild.id}): {content}")
-    embed=discord.Embed(
-            description=f":white_check_mark:Successfully wrote note “{name}”, use `oi note {name}` to read it!",
-            color=discord.Color.green())
-
-    await ctx.send(embed = embed)
-
-
-@writenote.error
-async def writenote_error(ctx, error):
-    print(f"Error on oi writenote: {error}")
-    msg = "Usage: `oi writenote <name> <content>`"
-    embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-    await ctx.send(embed = embed)
-
-
-@bot.command(name='editnote', aliases=['edit'])
-async def editnote(ctx, *, args):
-    try:
-        (name, content) = args.split(maxsplit=1)
-    except ValueError:
-        msg = "You must provide a content for the note.\nUsage: `oi writenote <name> <content>`"
-        embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-        await ctx.send(embed = embed)
-        return
-
-    if not name.replace("-", "").replace("_", "").isalpha():
-        msg = "Note name can only contain letters, “-” and “_”."
-        embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-        await ctx.send(embed = embed)
-        return
-
-    name = name.lower().replace(" ", "-")
-    content = content.strip()
-    if len(name) > 30:
-        msg = "Note name cannot exceed 30 characters."
-        embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-        await ctx.send(embed = embed)
-        return
-
-    # Write notes to file
-    notes = Notes(getPath(ctx))
-    notes.edit(name, content)
-    print(
-        f"Wrote note “{name}” on server “{ctx.guild.name}” ({ctx.guild.id}): {content}")
-    msg = f"Successfully wrote note “{name}”, use `oi note {name}` to read it!"
-    embed=discord.Embed(
-    description=f":white_check_mark: {msg}",
-    color=discord.Color.green())
-    await ctx.send(embed = embed)
-
-
-@editnote.error
-async def editnote_error(ctx, error):
-    print(f"Error on oi writenote: {error}")
-    await ctx.send("Usage: `oi writenote <name> <content>`")
-
-
-@bot.command(name='deletenote', aliases=['del', 'remove', 'delete'])
-async def deletenote(ctx, name):
-    name = name.lower().replace(" ", "-")
-    notes = Notes(getPath(ctx))
-
-    if not name.replace("-", "").replace("_", "").isalpha():
-        await ctx.send("Note name can only contain letters, “-” and “_”.")
-        return
-
-    if notes.delete(name):
-        msg = f"Note “{name}” successfully deleted!"
-        print(
-            f"Deleted note “{name}” on server “{ctx.guild.name}” ({ctx.guild.id})")
-    else:
-        msg = f"Note {name} does not exist.\nUse `oi notes to get a list of available notes."
-
-
-    embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-    
-    await ctx.send(embed = embed)
-
-
-@deletenote.error
-async def deletenote_error(ctx, error):
-    print(f"Error on !deletenote: {error}")
-    msg = "Usage: `!deletenote <name>`\nUse `!notes` to get a list of available notes."
-    embed=discord.Embed(
-        description=f":x: {msg}",
-        color=discord.Color.red())
-    await ctx.send(embed = embed)
-
-
-@bot.command()
-async def assign(ctx, *, args):
-    (name, content) = args.split(maxsplit=1)
-    com = Assign(getPat(ctx))
-    com.write(name, content)
-    print(
-        f"Wrote note “{name}” on server “{ctx.guild.name}” ({ctx.guild.id}): {content}")
-    embed=discord.Embed(
-            description=f":white_check_mark:Successfully assigned command {name}",
-            color=discord.Color.green())
-
-    await ctx.send(embed = embed)
 
 @bot.event
 async def on_message(message):
+    if message.author == bot.user:
+        return
     msg = message.content.lower()
-    content = Assign(getPat(message)).get(msg)
-    if content:
-        same = content
-        await message.channel.send({same})
+    if msg.find("kekw") >= 0:
+        await message.channel.send("https://cdn.discordapp.com/attachments/835792107296784395/911300358645645312/kek.png")
+    if msg.find("homie") >= 0 and msg != "oi homiecount":
+        await message.channel.send(
+            "https://cdn.discordapp.com/attachments/835550498840903724/840228503399694336/ezgif.com-gif-maker.gif"
+        )
     else:
-
         await bot.process_commands(message)
-        
 
-bot.run()
+keep_alive()
+bot.run(os.getenv('token'))
