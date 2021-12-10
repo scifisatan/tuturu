@@ -66,7 +66,7 @@ async def lyrics(ctx, *, song):
         await ctx.reply("Give me some words to search for you dickhead!!")
     else:
         ly = lyric(song)
-        embed=discord.Embed(title=f"{ly{[title]} - {ly[artist]}", description=f"{ly[song_lyrics]}")
+        embed=discord.Embed(title=f"{ly[title]} - {ly[artist]}", description=f"{ly[song_lyrics]}")
         await ctx.send(embed=embed)
 
 
