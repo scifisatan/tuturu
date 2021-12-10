@@ -1,7 +1,7 @@
 import lyricsgenius as lg
 client_access_token = "9hPqYJZrPuKjD_yGIsqgPfQ8_QlTxnuFsTwCifdnXFDsRiBLcp8Zx51DDnokiJkj"
 
-
+genius = lg.Genius(client_access_token)
     
 # Turn off status messages
 genius.verbose = True
@@ -13,7 +13,7 @@ genius.skip_non_songs = False
 genius.excluded_terms = ["(Remix)", "(Live)"]
 
 
-genius = lg.Genius(client_access_token)
+
 def lyric(keyword):
     songs = genius.search_songs(keyword)
     for song in songs['hits']:
