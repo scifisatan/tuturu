@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 import os
 from random import randint
-from keep_alive import keep_alive
+#from keep_alive import keep_alive
 from useless import Date, getDifference
 import datetime
 from bs4 import BeautifulSoup
@@ -12,9 +12,12 @@ import time
 from discord.ui import button, View, Button
 from discord.interactions import Interaction
 from glyrics import lyric
+from typing import Literal
+#from rashi import rashi
 
+intents =discord.Intents.all()
 bot = commands.Bot(
-    command_prefix=["oi ", "Oi ", "oi", "Oi", "OI ", "OI", "oI", "oI "])
+    command_prefix=["oi ", "Oi ", "oi", "Oi", "OI ", "OI", "oI", "oI "],intents =  intents)
 buSitaDate = Date(24, 4, 2021)
 weekday = {"sun": "0", "mon": "1", "tue": "2",
            "wed": "3", "thu": "4", "fri": "5", "sat": "6"}
@@ -30,45 +33,10 @@ async def on_ready():
 async def clear(ctx, amount=5):
     await ctx.channel.purge(limit=amount+1)
 
-
 @bot.command()
-async def qnbank(ctx):
-    Mathematics = Button(
-        label="Mathematics", url="https://aakritsubedi9.com.np/uploads/que-bank/Engineering-Mathematics-II.pdf")
-    Chemistry = Button(
-        label="Chemistry", url="https://aakritsubedi9.com.np/uploads/que-bank/Engineering-Chemistry.pdf")
-    Drawing = Button(
-        label="Drawing", url="https://aakritsubedi9.com.np/uploads/que-bank/Engineering-Drawing-II.pdf")
-    Electronics = Button(
-        label="Electronics", url="https://aakritsubedi9.com.np/uploads/que-bank/Basic-Electronics-Engineering.pdf")
-    Thermodynamics = Button(
-        label="Thermodynamics", url="https://aakritsubedi9.com.np/uploads/que-bank/Thermodynamics.pdf")
-    view = View()
-    view.add_item(Mathematics)
-    view.add_item(Chemistry)
-    view.add_item(Drawing)
-    view.add_item(Electronics)
-    view.add_item(Thermodynamics)
-    await ctx.reply("**Old Questions**\nPro tip: Once you click __trust this domain__, the button will directly open the url without the confirmation box", view=view)
-
-
-@bot.command()
-async def resources(ctx):
-    MathSolution = Button(
-        label="Math Solution", url="https://aakritsubedi9.com.np/uploads/2/SH451_2020-12-07T02:52:49.778Z_Maths%20Solution%20II%20Sem.pdf")
-    view = View()
-    view.add_item(MathSolution)
-    await ctx.reply("**OK NERD!!**", view=view)
-
-@bot.command()
-async def lyrics(ctx, *, song):
-    if song is None:
-        await ctx.reply("Give me some words to search for you dickhead!!")
-    else:
-        ly = lyric(song)
-        embed=discord.Embed(title=f"{ly[0]} - {ly[1]}", description=f"{ly[2]}", color=0x00ff00)
-        await ctx.send(embed=embed)
-
+async def lyrics(ctx, *, keyword):
+    lyrics = lyric(keyword)
+    await ctx.send(f"Title: {lyrics[0]}\nArtist: {lyrics[1]}\n\n {lyrics[2]}")
 
 # updates homie counter vc by calculating day difference of today and busita date
 
@@ -95,8 +63,6 @@ async def advice(ctx):
     await ctx.send(embed=embed)
 
 # send random joke
-
-
 @bot.command()
 async def joke(ctx):
     url = "https://icanhazdadjoke.com/"
@@ -116,11 +82,10 @@ async def waifu(ctx):
     response = requests.get(url)
     imageUrl = response.json()["url"]
     e = discord.Embed(title="Waifu", url=imageUrl, color=0xff66d6)
-    e.set_image(url=url)
+    e.set_image(url=imageUrl)
     await ctx.reply(embed=e)
 
 # sends random catgirl pics
-
 
 @bot.command()
 async def catgirl(ctx):
@@ -281,7 +246,24 @@ async def hentai(ctx, n: int):
         await ctx.send(embed=embed)
 
 # nsfw
+@bot.command(name='rashi')
+async def rashi(ctx, symbol: Literal['mesh','brish','mithun','karkat','singha','kanya','tula','brichik','dhanu','makar','kumbha','meen']):
+         csymbol = symbol
+         symbol = csymbol.lower()
+         URL = f"https://www.hamropatro.com/rashifal/daily/{symbol}"
+         page = requests.get(URL)
+         soup = BeautifulSoup(page.content, "html.parser")
+         rashi_div = soup.find_all("div", class_="desc")
 
+         for rashifal in rashi_div:
+            request_rashi = rashifal.find("p")
+            rashivalue = request_rashi.text.strip()
+         returnvalue = csymbol.upper() + '\n\n' + rashivalue
+         await ctx.send(returnvalue)
+
+@rashi.error
+async def rashi_error(ctx, error):
+    await ctx.send('Please enter a valid rashi ie \n mesh\n brish\n mithun\n karkat\n singha\n kanya\n tula\n brichik\n dhanu\n makar\n kumbha\n meen')
 
 @bot.command(name='random', aliases=['rd'])
 async def random(ctx, a: int):
@@ -331,7 +313,7 @@ async def on_message(message):
         return
     msg = message.content.lower()
     if msg.find("kekw") >= 0:
-        await message.channel.send("https://cdn.discordapp.com/attachments/835792107296784395/911300358645645312/kek.png")
+        await message.channel.send("https://cdn.discordapp.com/attachments/839393700765106196/1026519630350659654/unknown.png")
     if msg.find("homie") >= 0 and msg != "oi homiecount":
         await message.channel.send(
             "https://cdn.discordapp.com/attachments/835550498840903724/840228503399694336/ezgif.com-gif-maker.gif"
@@ -339,5 +321,5 @@ async def on_message(message):
     else:
         await bot.process_commands(message)
 
-keep_alive()
+#keep_alive()
 bot.run(os.getenv('token'))
